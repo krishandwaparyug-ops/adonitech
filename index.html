@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/images/tab.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>AdoniTech</title>
+  </head>
+  <body>
+    <style>
+      @media print {
+        @page {
+          margin: 0; /* Remove default page margins */
+          size: auto; /* Auto size based on content */
+        }
+
+        body {
+          margin: 0; /* Remove body margins */
+        }
+
+        /* You can also hide specific parts of the header and footer */
+        @page {
+          margin: 0;
+        }
+
+        @page :header {
+          display: none; /* Hide header */
+        }
+
+        @page :footer {
+          display: none; /* Hide footer */
+        }
+      }
+    </style>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
