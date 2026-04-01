@@ -193,11 +193,11 @@ const CraneFourth = () => {
     );
     const totalEnergy = kineticEnergy + potentialEnergy;
     const energyPerHour = Math.round(
-      (totalEnergy * cValue) / Number(shockAbsorber)
+      totalEnergy * cValue
     );
     const Vd = isMMin ? vValue / 60 : vValue;
     const emassMin = Math.round(
-      (2 * totalEnergy) / Vd ** 2 / Number(shockAbsorber)
+      (2 * totalEnergy) / Vd ** 2
     );
 
     // Update state with calculated results

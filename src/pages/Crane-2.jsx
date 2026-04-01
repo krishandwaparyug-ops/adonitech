@@ -212,14 +212,14 @@ export const CraneSecond = () => {
     const potentialEnergy = Math.round((fValue * sValue) / shockAbsorber);
     const totalEnergy = kineticEnergy + potentialEnergy;
     const energyPerHour = Math.round(
-      (totalEnergy * cValue) / Number(shockAbsorber)
+      totalEnergy * cValue
     );
     const Vd = (
       parseFloat(isMMin ? v1Value / 60 : v1Value) +
       parseFloat(isMMin2 ? v2Value / 60 : v2Value)
     ).toFixed(2);
     const emassMin = Math.round(
-      (2 * totalEnergy) / Vd ** 2 / Number(shockAbsorber)
+      (2 * totalEnergy) / Vd ** 2
     );
 
     // Update state with calculated results

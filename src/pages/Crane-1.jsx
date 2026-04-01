@@ -180,7 +180,7 @@ export const CraneFirst = () => {
 
   const handleCalculate = () => {
     const kineticEnergy = Math.round(
-      (mValue * (isMMin ? vValue / 60 : vValue) ** 2 * 0.25) /
+      (mValue * (isMMin ? vValue / 60 : vValue) ** 2 * 0.5) /
         Number(shockAbsorber)
     );
     const potentialEnergy = Math.round(
@@ -188,11 +188,11 @@ export const CraneFirst = () => {
     );
     const totalEnergy = kineticEnergy + potentialEnergy;
     const energyPerHour = Math.round(
-      (totalEnergy * cValue) / Number(shockAbsorber)
+      totalEnergy * cValue
     );
-    const Vd = ((isMMin ? vValue / 60 : vValue) * 0.5).toFixed(2);
+    const Vd = (isMMin ? vValue / 60 : vValue).toFixed(2);
     const emassMin = Math.round(
-      (2 * totalEnergy) / Vd ** 2 / Number(shockAbsorber)
+      (2 * totalEnergy) / Vd ** 2
     );
 
     // Update state with calculated results

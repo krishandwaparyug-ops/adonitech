@@ -12,12 +12,12 @@ export default function Cranel1_Calculation(data) {
 
   const velocityInMps = isMMin ? vValue / 60 : vValue;
   const kineticEnergy = Math.round(
-    (mValue * velocityInMps ** 2 * 0.25) / absorberCount
+    (mValue * velocityInMps ** 2 * 0.5) / absorberCount
   );
   const potentialEnergy = Math.round((fValue * sValue) / absorberCount);
   const totalEnergy = kineticEnergy + potentialEnergy;
   const energyPerHour = Math.round(totalEnergy * cValue);
-  const Vd = (velocityInMps * 0.5).toFixed(2);
+  const Vd = velocityInMps.toFixed(2);
   const emassMin = Math.round((2 * totalEnergy) / Vd ** 2);
 
   const strokeInMeters = sValue > 10 ? sValue / 1000 : sValue;
