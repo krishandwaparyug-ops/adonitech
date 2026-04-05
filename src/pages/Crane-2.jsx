@@ -200,40 +200,49 @@ export const CraneSecond = () => {
   };
   //Handle Calculated Data
 
-  const handleCalculate = () => {
-    const kineticEnergy = Math.round(
-      (((mValue * m2Value) / (Number(mValue) + Number(m2Value))) *
-        (Number(isMMin ? v1Value / 60 : v1Value) +
-          Number(isMMin2 ? v2Value / 60 : v2Value)) **
-          2 *
-        0.5) /
-        Number(shockAbsorber)
-    );
-    const potentialEnergy = Math.round((fValue * sValue) / shockAbsorber);
-    const totalEnergy = kineticEnergy + potentialEnergy;
+  const getComputedResults = () => {
+    const mass1 = Number(mValue) || 0;
+    const mass2 = Number(m2Value) || 0;
+    const velocity1 = Number(isMMin ? v1Value / 60 : v1Value) || 0;
+    const velocity2 = Number(isMMin2 ? v2Value / 60 : v2Value) || 0;
+    const absorberCount = Number(shockAbsorber) || 1;
+    const forceValue = Number(fValue) || 0;
+    const strokeValue = Number(sValue) || 0;
     const cyclesPerHour = Number(cValue) || 0;
-    const energyPerHour = Math.round(totalEnergy * cyclesPerHour);
-    const Vd = (
-      parseFloat(isMMin ? v1Value / 60 : v1Value) +
-      parseFloat(isMMin2 ? v2Value / 60 : v2Value)
-    ).toFixed(2);
-    const emassMin = Math.round(
-      (2 * totalEnergy) / Vd ** 2
-    );
 
-    // Update state with calculated results
-    setCalculatedResults({
+    const reducedMass =
+      mass1 + mass2 > 0 ? (mass1 * mass2) / (mass1 + mass2) : 0;
+    const combinedVelocity = velocity1 + velocity2;
+
+    const kineticEnergy = Math.round(
+      (reducedMass * combinedVelocity ** 2 * 0.5) / absorberCount
+    );
+    const potentialEnergy = Math.round((forceValue * strokeValue) / absorberCount);
+    const totalEnergy = kineticEnergy + potentialEnergy;
+    const energyPerHour = Math.round(totalEnergy * cyclesPerHour);
+    const vdValue = combinedVelocity;
+    const Vd = vdValue.toFixed(2);
+    const emassMin =
+      vdValue > 0 ? Math.round((2 * totalEnergy) / vdValue ** 2) : 0;
+
+    return {
       kineticEnergy,
       potentialEnergy,
       totalEnergy,
       energyPerHour,
       Vd,
       emassMin,
-    });
+    };
+  };
+
+  const handleCalculate = () => {
+    const computedResults = getComputedResults();
+    setCalculatedResults(computedResults);
+    return computedResults;
   };
 
   //Fetching Data
-  const getData = async () => {
+  const getData = async (results = calculatedResults) => {
     try {
       const response = await fetch(
         // "http://15.206.90.45:5000/api/data/data",
@@ -248,14 +257,14 @@ export const CraneSecond = () => {
       if (response.ok) {
         const data = await response.json();
         const calculateDifference = (item) =>
-          Math.abs(item.nmperstroke - calculatedResults.totalEnergy);
+          Math.abs(item.nmperstroke - results.totalEnergy);
 
         const filteredData = {
           ED: data
             .filter(
               (item) =>
-                item.nmperstroke >= calculatedResults.totalEnergy * 0.9 &&
-                item.nmperhr >= calculatedResults.energyPerHour &&
+                item.nmperstroke >= results.totalEnergy * 0.9 &&
+                item.nmperhr >= results.energyPerHour &&
                 item["series"] === "ED"
             )
             .map((item) => ({
@@ -265,8 +274,8 @@ export const CraneSecond = () => {
           EI: data
             .filter(
               (item) =>
-                item.nmperstroke >= calculatedResults.totalEnergy * 0.9 &&
-                item.nmperhr >= calculatedResults.energyPerHour &&
+                item.nmperstroke >= results.totalEnergy * 0.9 &&
+                item.nmperhr >= results.energyPerHour &&
                 item["series"] === "EI"
             )
             .map((item) => ({
@@ -276,8 +285,8 @@ export const CraneSecond = () => {
           SB: data
             .filter(
               (item) =>
-                item.nmperstroke >= calculatedResults.totalEnergy * 0.9 &&
-                item.nmperhr >= calculatedResults.energyPerHour &&
+                item.nmperstroke >= results.totalEnergy * 0.9 &&
+                item.nmperhr >= results.energyPerHour &&
                 item["series"] === "SB"
             )
             .map((item) => ({
@@ -288,8 +297,8 @@ export const CraneSecond = () => {
           AKHG: data
             .filter(
               (item) =>
-                item.nmperstroke >= calculatedResults.totalEnergy * 0.9 &&
-                item.nmperhr >= calculatedResults.energyPerHour &&
+                item.nmperstroke >= results.totalEnergy * 0.9 &&
+                item.nmperhr >= results.energyPerHour &&
                 item["series"] === "AKHG"
             )
             .map((item) => ({
@@ -348,8 +357,8 @@ export const CraneSecond = () => {
       v2Value ||
       m2Value
     ) {
-      getData();
-      handleCalculate();
+      const computedResults = handleCalculate();
+      getData(computedResults);
       setShowTable(true);
     } else {
       setShowTable(false);
@@ -372,12 +381,8 @@ export const CraneSecond = () => {
     fValue,
     sValue,
     shockAbsorber,
-    calculatedResults.emassMin,
-    calculatedResults.energyPerHour,
-    calculatedResults.kineticEnergy,
-    calculatedResults.potentialEnergy,
-    calculatedResults.totalEnergy,
-    calculatedResults.Vd,
+    isMMin,
+    isMMin2,
   ]);
 
   const handleModelClick = (model) => {
@@ -389,10 +394,12 @@ export const CraneSecond = () => {
       const selectedModel = top5ModelNames[modelType].find(
         (m) => m.model === model
       );
-      const totalEnergy = Number(calculatedResults.totalEnergy) || 0;
+      const computedResults = getComputedResults();
+      const totalEnergy = Number(computedResults.totalEnergy) || 0;
       const cyclesPerHour = Number(cValue) || 0;
       const energyPerHour = Math.round(totalEnergy * cyclesPerHour);
-      const vd = Number(calculatedResults.Vd) || 0;
+      const vd = Number(computedResults.Vd) || 0;
+      const emassMin = vd > 0 ? Math.round((2 * totalEnergy) / vd ** 2) : 0;
       const decelerationValue = selectedModel.stroke
         ? ((0.75 * vd ** 2) / (selectedModel.stroke / 1000)).toFixed(2)
         : "0.00";
@@ -407,12 +414,12 @@ export const CraneSecond = () => {
         addData({
           currency: selectedCurrency,
           shockAbsorber: shockAbsorber,
-          kineticEnergy: calculatedResults.kineticEnergy,
-          potentialEnergy: calculatedResults.potentialEnergy,
+          kineticEnergy: computedResults.kineticEnergy,
+          potentialEnergy: computedResults.potentialEnergy,
           totalEnergy,
           energyPerHour,
-          Vd: calculatedResults.Vd,
-          emassMin: calculatedResults.emassMin,
+          Vd: computedResults.Vd,
+          emassMin,
           mass: mValue,
           velocity: v1Value,
           cycle: cValue,
