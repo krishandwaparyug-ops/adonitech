@@ -80,7 +80,7 @@ export const Technical = () => {
     modelNmPerHour > 0
       ? ((correctedEnergyPerHour / modelNmPerHour) * 100).toFixed(2)
       : rateOfUtilizationPerHour || "0.00";
-  const modelStroke = Number(prices?.stroke) || 0;
+  const modelStroke = Number(prices?.stroke ?? prices?.Stroke) || 0;
   const correctedDecelerationValue =
     modelStroke > 0 && vdValue > 0
       ? ((0.75 * vdValue ** 2) / (modelStroke / 1000)).toFixed(2)

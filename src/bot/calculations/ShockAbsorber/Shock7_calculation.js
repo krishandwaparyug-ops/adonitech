@@ -13,7 +13,7 @@ export default function calculateEnergyValues(data) {
   } = data;
   const v = isVelocityInMSec ? velocity : velocity / 60;
 
-  const kineticEnergy = Math.round((mass * v ** 2 * 0.25) / shockAbsorber);
+  const kineticEnergy = Math.round((mass * v ** 2 * 0.5) / shockAbsorber);
   const potentialEnergy = Math.round(
     (propellingTorque * strokeValue) / radius / shockAbsorber
   );

@@ -79,6 +79,15 @@ const dataSlice = createSlice({
           ? ((Number(correctedEnergyPerHour) / nmPerHourValue) * 100).toFixed(2)
           : action.payload.rateOfUtilizationPerHour;
 
+      const modelStrokeValue = Number(
+        action.payload?.data?.stroke ?? action.payload?.data?.Stroke
+      );
+
+      const correctedDecelerationValue =
+        hasVd && Number.isFinite(modelStrokeValue) && modelStrokeValue > 0
+          ? ((0.75 * vdValue ** 2) / (modelStrokeValue / 1000)).toFixed(2)
+          : action.payload.decelerationValue;
+
       state.shockAbsorber = action.payload.shockAbsorber;
       state.kineticEnergy = action.payload.kineticEnergy;
       state.potentialEnergy = action.payload.potentialEnergy;
@@ -104,7 +113,7 @@ const dataSlice = createSlice({
       state.email = action.payload.email;
       state.phone = action.payload.phone;
       state.company = action.payload.company;
-      state.decelerationValue = action.payload.decelerationValue;
+      state.decelerationValue = correctedDecelerationValue;
       state.rateOfUtilizationPerStroke = correctedRatePerStroke;
       state.rateOfUtilizationPerHour = correctedRatePerHour;
       state.project = action.payload.project;

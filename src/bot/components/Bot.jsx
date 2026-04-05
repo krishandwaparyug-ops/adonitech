@@ -91,6 +91,58 @@ const Bot = ({ showTip, setShowTip }) => {
     scrollToBottom();
   }, [messages]);
 
+  const normalizeCalculationOutput = (input, result) => {
+    if (!result || typeof result !== "object") {
+      return result;
+    }
+
+    const totalEnergyValue = Number(result.totalEnergy);
+    const vdValue = Number(result.Vd);
+
+    const cycleCandidates = [
+      input?.cyclesPerHour,
+      input?.cycles,
+      input?.cycle,
+      input?.cValue,
+    ];
+    const cycleValue = cycleCandidates
+      .map((value) => Number(value))
+      .find((value) => Number.isFinite(value));
+
+    const correctedEnergyPerHour =
+      Number.isFinite(totalEnergyValue) && Number.isFinite(cycleValue)
+        ? Math.round(totalEnergyValue * cycleValue)
+        : result.energyPerHour;
+
+    const correctedEmassMin =
+      Number.isFinite(totalEnergyValue) && Number.isFinite(vdValue) && vdValue !== 0
+        ? Math.round((2 * totalEnergyValue) / vdValue ** 2)
+        : result.emassMin;
+
+    const strokeCandidates = [input?.stroke, input?.sValue, input?.strokeValue];
+    const strokeRaw = strokeCandidates
+      .map((value) => Number(value))
+      .find((value) => Number.isFinite(value) && value > 0);
+    const strokeInMeters =
+      Number.isFinite(strokeRaw) && strokeRaw > 0
+        ? strokeRaw > 10
+          ? strokeRaw / 1000
+          : strokeRaw
+        : null;
+
+    const correctedDeceleration =
+      Number.isFinite(vdValue) && strokeInMeters
+        ? Number(((0.75 * vdValue ** 2) / strokeInMeters).toFixed(3))
+        : result.deceleration;
+
+    return {
+      ...result,
+      energyPerHour: correctedEnergyPerHour,
+      emassMin: correctedEmassMin,
+      deceleration: correctedDeceleration,
+    };
+  };
+
   const performVibrationCalculations = async (vibrationData) => {
     setIsLoading(true);
     const Wt_N = vibrationData.Wt * 9.81;
@@ -963,7 +1015,9 @@ const Bot = ({ showTip, setShowTip }) => {
                 default:
                   throw new Error("Invalid model type");
               }
-              setCurrentCalculation(calculationResult);
+              setCurrentCalculation(
+                normalizeCalculationOutput(formData, calculationResult)
+              );
               setMessages((prev) => [
                 ...prev,
                 {

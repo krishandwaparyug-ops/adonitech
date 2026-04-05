@@ -47,6 +47,27 @@ const PricePage = () => {
   const [totalPrice, setTotalPrice] = useState(0);
   const { modelName } = useParams();
   const [prices, setPrices] = useState({});
+  const totalEnergyValue = Number(totalEnergy) || 0;
+  const cycleValue = Number(cycle) || 0;
+  const vdValue = Number(Vd) || 0;
+  const correctedEnergyPerHour = Math.round(totalEnergyValue * cycleValue);
+  const correctedEmassMin =
+    vdValue > 0 ? Math.round((2 * totalEnergyValue) / vdValue ** 2) : 0;
+  const modelNmPerStroke = Number(prices?.nmperstroke) || 0;
+  const correctedRateOfUtilizationPerStroke =
+    modelNmPerStroke > 0
+      ? ((totalEnergyValue / modelNmPerStroke) * 100).toFixed(2)
+      : rateOfUtilizationPerStroke;
+  const modelNmPerHour = Number(prices?.nmperhr) || 0;
+  const correctedRateOfUtilizationPerHour =
+    modelNmPerHour > 0
+      ? ((correctedEnergyPerHour / modelNmPerHour) * 100).toFixed(2)
+      : rateOfUtilizationPerHour;
+  const modelStroke = Number(prices?.stroke ?? prices?.Stroke) || 0;
+  const correctedDecelerationValue =
+    modelStroke > 0 && vdValue > 0
+      ? ((0.75 * vdValue ** 2) / (modelStroke / 1000)).toFixed(2)
+      : decelerationValue;
   // const [quantityDisplay, setQuantityDisplay] = useState({});
   const [selectedSparePart, setSelectedSparePart] = useState(null);
   const [selectedAccessories, setSelectedAccessories] = useState([]);
@@ -178,10 +199,10 @@ const PricePage = () => {
         addAdditionalPriceData: additionalPriceData,
         kineticEnergy: kineticEnergy,
         potentialEnergy: potentialEnergy,
-        totalEnergy: totalEnergy,
-        energyPerHour: energyPerHour,
-        Vd: Vd,
-        emassMin: emassMin,
+        totalEnergy: totalEnergyValue,
+        energyPerHour: correctedEnergyPerHour,
+        Vd: vdValue.toFixed(2),
+        emassMin: correctedEmassMin,
         mass: mass,
         velocity: velocity,
         cycle: cycle,
@@ -191,9 +212,9 @@ const PricePage = () => {
         mass2: mass2,
         power: power,
         stallFactor: stallFactor,
-        decelerationValue: decelerationValue,
-        rateOfUtilizationPerStroke: rateOfUtilizationPerStroke,
-        rateOfUtilizationPerHour: rateOfUtilizationPerHour,
+        decelerationValue: correctedDecelerationValue,
+        rateOfUtilizationPerStroke: correctedRateOfUtilizationPerStroke,
+        rateOfUtilizationPerHour: correctedRateOfUtilizationPerHour,
         contentType: contentType,
         tempMax: tempMax,
         tempMin: tempMin,

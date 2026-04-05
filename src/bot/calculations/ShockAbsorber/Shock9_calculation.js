@@ -18,7 +18,7 @@ const calculateCraneEnergy = (data) => {
   const s = Number(stroke); // assumed in meters, convert if needed
 
   // Energies
-  const kineticEnergy = Math.round((m * v ** 2 * 0.17) / sa);
+  const kineticEnergy = Math.round((m * v ** 2 * 0.5) / sa);
   const potentialEnergy = Math.round((torque * s) / r / sa);
   const totalEnergy = kineticEnergy + potentialEnergy;
 

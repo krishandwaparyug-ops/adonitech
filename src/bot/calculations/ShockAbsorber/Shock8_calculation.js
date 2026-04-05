@@ -13,7 +13,7 @@ const calculateEnergyData = (data) => {
     const v = isMSec ? velocity : velocity / 60; // convert mm/min to m/s if needed
   
     // 1. Kinetic Energy
-    const kineticEnergy = Math.round((mass * v ** 2 * 0.17) / shockAbsorber);
+    const kineticEnergy = Math.round((mass * v ** 2 * 0.5) / shockAbsorber);
   
     // 2. Potential Energy
     const potentialEnergy = Math.round(((propellingTorque * stroke) / radius) / shockAbsorber);
