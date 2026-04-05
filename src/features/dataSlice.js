@@ -47,13 +47,45 @@ const dataSlice = createSlice({
     // Define action creators here
     addData(state, action) {
       // Add data to state
+      const totalEnergyValue = Number(action.payload.totalEnergy);
+      const cycleValue = Number(action.payload.cycle);
+      const vdValue = Number(action.payload.Vd);
+      const hasTotalEnergy = Number.isFinite(totalEnergyValue);
+      const hasCycle = Number.isFinite(cycleValue);
+      const hasVd = Number.isFinite(vdValue) && vdValue !== 0;
+
+      const correctedEnergyPerHour =
+        hasTotalEnergy && hasCycle
+          ? Math.round(totalEnergyValue * cycleValue)
+          : action.payload.energyPerHour;
+
+      const correctedEmassMin =
+        hasTotalEnergy && hasVd
+          ? Math.round((2 * totalEnergyValue) / vdValue ** 2)
+          : action.payload.emassMin;
+
+      const nmPerStrokeValue = Number(action.payload?.data?.nmperstroke);
+      const nmPerHourValue = Number(action.payload?.data?.nmperhr);
+
+      const correctedRatePerStroke =
+        hasTotalEnergy && Number.isFinite(nmPerStrokeValue) && nmPerStrokeValue > 0
+          ? ((totalEnergyValue / nmPerStrokeValue) * 100).toFixed(2)
+          : action.payload.rateOfUtilizationPerStroke;
+
+      const correctedRatePerHour =
+        Number.isFinite(Number(correctedEnergyPerHour)) &&
+        Number.isFinite(nmPerHourValue) &&
+        nmPerHourValue > 0
+          ? ((Number(correctedEnergyPerHour) / nmPerHourValue) * 100).toFixed(2)
+          : action.payload.rateOfUtilizationPerHour;
+
       state.shockAbsorber = action.payload.shockAbsorber;
       state.kineticEnergy = action.payload.kineticEnergy;
       state.potentialEnergy = action.payload.potentialEnergy;
       state.totalEnergy = action.payload.totalEnergy;
-      state.energyPerHour = action.payload.energyPerHour;
+      state.energyPerHour = correctedEnergyPerHour;
       state.Vd = action.payload.Vd;
-      state.emassMin = action.payload.emassMin;
+      state.emassMin = correctedEmassMin;
       state.currency = action.payload.currency;
       state.data = action.payload.data;
       state.spare = action.payload.spare;
@@ -73,9 +105,8 @@ const dataSlice = createSlice({
       state.phone = action.payload.phone;
       state.company = action.payload.company;
       state.decelerationValue = action.payload.decelerationValue;
-      state.rateOfUtilizationPerStroke =
-        action.payload.rateOfUtilizationPerStroke;
-      state.rateOfUtilizationPerHour = action.payload.rateOfUtilizationPerHour;
+      state.rateOfUtilizationPerStroke = correctedRatePerStroke;
+      state.rateOfUtilizationPerHour = correctedRatePerHour;
       state.project = action.payload.project;
       state.GSTn = action.payload.GSTn;
       state.contentType = action.payload.contentType;

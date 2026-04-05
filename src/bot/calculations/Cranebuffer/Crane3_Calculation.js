@@ -16,7 +16,7 @@ export default function Cranel3_Calculation(formData) {
       ((mValue * m2Value) / (mValue + m2Value)) * (v1InMps + v2InMps) ** 2 * 0.5 / shockAbsorber
     );
     const potentialEnergy = Math.round((fValue * sValue) / shockAbsorber);
-    const totalEnergy = Math.round(kineticEnergy / 2 + potentialEnergy);
+    const totalEnergy = kineticEnergy + potentialEnergy;
     const energyPerHour = Math.round(totalEnergy * cValue);
     const Vd = (v1InMps + v2InMps).toFixed(2);
     const emassMin = Math.round((2 * totalEnergy) / (Vd ** 2));

@@ -63,6 +63,29 @@ export const Technical = () => {
   const rateOfUtilizationPerHour = useSelector(
     (state) => state.data.rateOfUtilizationPerHour
   );
+
+  const totalEnergyValue = Number(totalEnergy) || 0;
+  const cycleValue = Number(cycle) || 0;
+  const vdValue = Number(Vd) || 0;
+  const correctedEnergyPerHour = Math.round(totalEnergyValue * cycleValue);
+  const correctedEmassMin =
+    vdValue > 0 ? Math.round((2 * totalEnergyValue) / vdValue ** 2) : 0;
+  const modelNmPerStroke = Number(prices?.nmperstroke) || 0;
+  const correctedRateOfUtilizationPerStroke =
+    modelNmPerStroke > 0
+      ? ((totalEnergyValue / modelNmPerStroke) * 100).toFixed(2)
+      : rateOfUtilizationPerStroke || "0.00";
+  const modelNmPerHour = Number(prices?.nmperhr) || 0;
+  const correctedRateOfUtilizationPerHour =
+    modelNmPerHour > 0
+      ? ((correctedEnergyPerHour / modelNmPerHour) * 100).toFixed(2)
+      : rateOfUtilizationPerHour || "0.00";
+  const modelStroke = Number(prices?.stroke) || 0;
+  const correctedDecelerationValue =
+    modelStroke > 0 && vdValue > 0
+      ? ((0.75 * vdValue ** 2) / (modelStroke / 1000)).toFixed(2)
+      : (Number(decelerationValue) || 0).toFixed(2);
+
   const [extraData, setExtraData] = useState({});
 
   const spareItems = extraData?.spare || [];
@@ -225,10 +248,10 @@ export const Technical = () => {
   const formdata = {
     kineticEnergy,
     potentialEnergy,
-    totalEnergy,
-    energyPerHour,
-    Vd,
-    emassMin,
+    totalEnergy: totalEnergyValue,
+    energyPerHour: correctedEnergyPerHour,
+    Vd: vdValue.toFixed(2),
+    emassMin: correctedEmassMin,
     mass,
     velocity,
     cycle,
@@ -237,9 +260,9 @@ export const Technical = () => {
     velocity2,
     power,
     stallFactor,
-    decelerationValue,
-    rateOfUtilizationPerStroke,
-    rateOfUtilizationPerHour,
+    decelerationValue: correctedDecelerationValue,
+    rateOfUtilizationPerStroke: correctedRateOfUtilizationPerStroke,
+    rateOfUtilizationPerHour: correctedRateOfUtilizationPerHour,
     modelName,
     contentType,
     name,
@@ -295,15 +318,20 @@ export const Technical = () => {
   };
 
   const isAnyInputMissing =
-    !kineticEnergy ||
-    !potentialEnergy ||
-    !totalEnergy ||
-    !energyPerHour ||
-    !Vd ||
-    !emassMin ||
-    !decelerationValue ||
-    !rateOfUtilizationPerStroke ||
-    !rateOfUtilizationPerHour;
+    kineticEnergy === null ||
+    kineticEnergy === undefined ||
+    potentialEnergy === null ||
+    potentialEnergy === undefined ||
+    totalEnergy === null ||
+    totalEnergy === undefined ||
+    Vd === null ||
+    Vd === undefined ||
+    correctedEmassMin === null ||
+    correctedEmassMin === undefined ||
+    correctedDecelerationValue === null ||
+    correctedDecelerationValue === undefined ||
+    correctedRateOfUtilizationPerStroke === null ||
+    correctedRateOfUtilizationPerStroke === undefined;
 
   // Determine if tempMax and tempMin meet the conditions for color change
   const isTempMaxValid = tempMax !== -10;
@@ -565,35 +593,27 @@ export const Technical = () => {
                 }}
               >
                 <TableRow>
-                  {kineticEnergy && <TableCell>{kineticEnergy} N-M</TableCell>}
-                  {potentialEnergy && (
-                    <TableCell>{potentialEnergy || 0} N-M</TableCell>
-                  )}
-                  {totalEnergy && <TableCell>{totalEnergy} N-M</TableCell>}
-                  {energyPerHour && <TableCell>{energyPerHour} N-M</TableCell>}
-                  {Vd && <TableCell>{parseFloat(Vd).toFixed(2)} M/s</TableCell>}
-                  {emassMin && <TableCell>{emassMin} Kg</TableCell>}
-                  {decelerationValue && (
-                    <TableCell
-                      className={`${
-                        decelerationValue > 5
-                          ? "!text-red-500"
-                          : "!text-green-500"
-                      }`}
-                    >
-                      {decelerationValue} M/s²
-                    </TableCell>
-                  )}
-                  {rateOfUtilizationPerStroke && (
-                    <TableCell className="rateOfUtilizationCell">
-                      {rateOfUtilizationPerStroke || ""} %
-                    </TableCell>
-                  )}
-                  {rateOfUtilizationPerHour && (
-                    <TableCell className="rateOfUtilizationCell">
-                      {rateOfUtilizationPerHour || ""} %
-                    </TableCell>
-                  )}
+                  <TableCell>{Number(kineticEnergy) || 0} N-M</TableCell>
+                  <TableCell>{Number(potentialEnergy) || 0} N-M</TableCell>
+                  <TableCell>{totalEnergyValue} N-M</TableCell>
+                  <TableCell>{correctedEnergyPerHour} N-M</TableCell>
+                  <TableCell>{vdValue.toFixed(2)} M/s</TableCell>
+                  <TableCell>{correctedEmassMin} Kg</TableCell>
+                  <TableCell
+                    className={`${
+                      Number(correctedDecelerationValue) > 5
+                        ? "!text-red-500"
+                        : "!text-green-500"
+                    }`}
+                  >
+                    {correctedDecelerationValue} M/s²
+                  </TableCell>
+                  <TableCell className="rateOfUtilizationCell">
+                    {correctedRateOfUtilizationPerStroke} %
+                  </TableCell>
+                  <TableCell className="rateOfUtilizationCell">
+                    {correctedRateOfUtilizationPerHour} %
+                  </TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -675,10 +695,10 @@ export const Technical = () => {
                     addAdditionalPriceData,
                     kineticEnergy: kineticEnergy,
                     potentialEnergy: potentialEnergy,
-                    totalEnergy: totalEnergy,
-                    energyPerHour: energyPerHour,
-                    Vd: Vd,
-                    emassMin: emassMin,
+                    totalEnergy: totalEnergyValue,
+                    energyPerHour: correctedEnergyPerHour,
+                    Vd: vdValue.toFixed(2),
+                    emassMin: correctedEmassMin,
                     mass: mass,
                     velocity: velocity,
                     cycle: cycle,
@@ -695,9 +715,11 @@ export const Technical = () => {
                     project: project,
                     GSTn: GSTn,
                     contentType: contentType,
-                    decelerationValue: decelerationValue,
-                    rateOfUtilizationPerStroke: rateOfUtilizationPerStroke,
-                    rateOfUtilizationPerHour: rateOfUtilizationPerHour,
+                    decelerationValue: correctedDecelerationValue,
+                    rateOfUtilizationPerStroke:
+                      correctedRateOfUtilizationPerStroke,
+                    rateOfUtilizationPerHour:
+                      correctedRateOfUtilizationPerHour,
                     tempMin: tempMin,
                     tempMax: tempMax,
                   })

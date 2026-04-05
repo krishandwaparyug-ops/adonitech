@@ -217,8 +217,9 @@ export const CraneThird = () => {
         shockAbsorber
     );
     const potentialEnergy = Math.round((fValue * sValue) / shockAbsorber);
-    const totalEnergy = Math.round(kineticEnergy / 2 + potentialEnergy);
-    const energyPerHour = Math.round(totalEnergy * cValue);
+    const totalEnergy = kineticEnergy + potentialEnergy;
+    const cyclesPerHour = Number(cValue) || 0;
+    const energyPerHour = Math.round(totalEnergy * cyclesPerHour);
     const Vd = (
       Number(isMMin ? v1Value / 60 : v1Value) +
       Number(isMMin2 ? v2Value / 60 : v2Value)
@@ -391,6 +392,20 @@ export const CraneThird = () => {
       const selectedModel = top5ModelNames[modelType].find(
         (m) => m.model === model
       );
+      const totalEnergy = Number(calculatedResults.totalEnergy) || 0;
+      const cyclesPerHour = Number(cValue) || 0;
+      const energyPerHour = Math.round(totalEnergy * cyclesPerHour);
+      const vd = Number(calculatedResults.Vd) || 0;
+      const decelerationValue = selectedModel.stroke
+        ? ((0.75 * vd ** 2) / (selectedModel.stroke / 1000)).toFixed(2)
+        : "0.00";
+      const rateOfUtilizationPerStroke = selectedModel.nmperstroke
+        ? ((totalEnergy / selectedModel.nmperstroke) * 100).toFixed(2)
+        : "0.00";
+      const rateOfUtilizationPerHour = selectedModel.nmperhr
+        ? ((energyPerHour / selectedModel.nmperhr) * 100).toFixed(2)
+        : "0.00";
+
       dispatch(
         addData({
           mass: mValue,
@@ -406,23 +421,14 @@ export const CraneThird = () => {
           shockAbsorber: shockAbsorber,
           kineticEnergy: calculatedResults.kineticEnergy,
           potentialEnergy: calculatedResults.potentialEnergy,
-          totalEnergy: calculatedResults.totalEnergy,
-          energyPerHour: calculatedResults.energyPerHour,
+          totalEnergy,
+          energyPerHour,
           Vd: calculatedResults.Vd,
           emassMin: calculatedResults.emassMin,
           contentType: content,
-          decelerationValue: (
-            (0.75 * calculatedResults.Vd ** 2) /
-            (selectedModel.stroke / 1000)
-          ).toFixed(2),
-          rateOfUtilizationPerStroke: (
-            (calculatedResults.totalEnergy / selectedModel.nmperstroke) *
-            100
-          ).toFixed(2),
-          rateOfUtilizationPerHour: (
-            (calculatedResults.energyPerHour / selectedModel.nmperhr) *
-            100
-          ).toFixed(2),
+          decelerationValue,
+          rateOfUtilizationPerStroke,
+          rateOfUtilizationPerHour,
         })
       );
     }
